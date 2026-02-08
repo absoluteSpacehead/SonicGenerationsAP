@@ -3,9 +3,13 @@
   <ItemGroup>
     <ClCompile Include="Pch.cpp" />
     <ClCompile Include="Mod.cpp" />
+    <ClCompile Include="Config.cpp" />
+    <ClCompile Include="Archipelago.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Pch.h" />
     <ClInclude Include="Types.h" />
+    <ClInclude Include="Archipelago.h" />
+    <ClInclude Include="Config.h" />
   </ItemGroup>
 </Project>

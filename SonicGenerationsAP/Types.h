@@ -3,26 +3,28 @@
 // im really not familiar with BlueBlur's styling so im not putting this in there myself
 // this is just what i need to get shit working..
 
-enum class EEmeraldState : int32_t
-{
-	eEmeraldState_Inactive = 0,
-	eEmeraldState_Ready = 1,
-	eEmeraldState_Active = 2,
-	eEmeraldState_Collected = 3,
-	eEmeraldState_Gear1 = 4,
-	eEmeraldState_Gear2 = 5,
-	eEmeraldState_Gear3 = 6,
-	eEmeraldState_Gear4 = 7,
-	eEmeraldState_Gear5 = 8,
-	eEmeraldState_Gear6 = 9,
-	eEmeraldState_Gear7 = 10
-};
-
 class CChaosEmeraldPlayableMenu
 {
 public:
-	char pad0[260];				// 0x0
-	int32_t EmeraldIndex;		// 0x104
-	char pad1[24];				// 0x108
-	EEmeraldState EmeraldState;	// 0x120
+	char pad0[260];													// 0x0
+	int32_t EmeraldIndex;											// 0x104
+	char pad1[24];													// 0x108
+	Sonic::CGameParameter::SSaveData::EEmeraldState EmeraldState;	// 0x120
+};
+
+class CObjBossGateKeyForSetObject
+{
+public:
+	char pad0[260];												// 0x0
+	int32_t KeyIndex;											// 0x104
+	Sonic::CGameParameter::SSaveData::EBossKeyState KeyState;	// 0x108
+};
+
+// i never actually checked if this is in fact the type referenced in func 0x569AE0, i just kinda assumed it was because it was in the vtable for that class
+// so if i can be bothered ill double check this and correct it if its wrong lol
+class CSequenceElementTakeEmerald
+{
+public:
+	char pad0[4];		// 0x0
+	int32_t EmeraldIndex;	// 0x4
 };

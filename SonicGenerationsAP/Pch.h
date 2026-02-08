@@ -12,3 +12,5 @@
 #include <BlueBlur.h>
 
 #include "Types.h"
+
+#include <APCpp/Archipelago.h>
