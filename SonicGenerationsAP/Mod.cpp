@@ -95,7 +95,6 @@ void __declspec(naked) RedEmeraldCollect_ASM()
 		jmp[RedEmeraldCollect_ASMReturnAddress]
 
 		NotCollected:
-		pop ecx
 		pop eax
 		mov dword ptr[eax + ecx * 0x4 + 0xA048], 0x0
 		jmp[RedEmeraldCollect_ASMReturnAddress]
