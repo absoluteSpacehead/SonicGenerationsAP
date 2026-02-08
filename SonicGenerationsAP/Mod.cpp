@@ -194,8 +194,9 @@ void __declspec(naked) SetBossKeyActiveOnMissionClear_ASM()
 // this also isnt per era, so you cant skip seaside hill and play crisis city
 // but it does NOT apply to bosses, you can play bosses before playing all the levels
 #pragma region Act Clear
-// presumably part of the full act clear screen but im too lazy to verify that lol. therefore not called for missions
+// presumably part of the full act clear screen -- therefore not called for missions
 // TODO: get whether its hardmode boss, apparently thats mission mode 1 according to the quick boot settings
+// TODO: there is absolutely an easier way to do this if i actually looked at the class LMAO idk what the hell i was thinking writing this . am i STUPID (yes)
 HOOK(void, __fastcall, ActClear, 0xCFD550, void* pThis)
 {
 	const std::string stageName = Sonic::CGameDocument::GetInstance()->m_pMember->m_StageName.get();

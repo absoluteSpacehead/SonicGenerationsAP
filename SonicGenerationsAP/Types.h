@@ -25,6 +25,6 @@ public:
 class CSequenceElementTakeEmerald
 {
 public:
-	char pad0[4];		// 0x0
+	char pad0[4];			// 0x0
 	int32_t EmeraldIndex;	// 0x4
 };
