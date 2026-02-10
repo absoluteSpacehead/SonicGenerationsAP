@@ -8,6 +8,15 @@ void CArchipelagoData::ClearData()
 
 void CArchipelagoData::OnItemRecieved(int id, bool alert)
 {
+	if (!alert)
+	{
+		printf("item resent %d\n", id);
+		// mark as collected but ignore otherwise
+		if (id != eItemNothing)
+			ItemsCollected[id] = true;
+		return;
+	}
+
 	if (!ItemsCollected[id])
 	{
 		printf("item recieved %d\n", id);

@@ -264,7 +264,6 @@ void InitHooks()
 	WRITE_JUMP(0xD585EA, StageClear_ASM);
 }
 
-// TODO: dont recieve every item again when reconnecting, for prog items you can just check against save but what about inf filler?
 bool InitAP()
 {
 	if (!CConfiguration::LoadConfig())
