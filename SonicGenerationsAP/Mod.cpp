@@ -194,45 +194,58 @@ void __declspec(naked) SetBossKeyActiveOnMissionClear_ASM()
 // this also isnt per era, so you cant skip seaside hill and play crisis city
 // but it does NOT apply to bosses, you can play bosses before playing all the levels
 #pragma region Act Clear
-// presumably part of the full act clear screen -- therefore not called for missions
-// TODO: get whether its hardmode boss, apparently thats mission mode 1 according to the quick boot settings
-// TODO: there is absolutely an easier way to do this if i actually looked at the class LMAO idk what the hell i was thinking writing this . am i STUPID (yes)
-HOOK(void, __fastcall, ActClear, 0xCFD550, void* pThis)
-{
-	const std::string stageName = Sonic::CGameDocument::GetInstance()->m_pMember->m_StageName.get();
+/*
+ * SSaveData stages go:
+ * 0 - 17 (ghz1->pla2)
+ * cnz1 is on 18
+ * cnz2 is probably on 19
+ * bms is on 20
+ * bsd is on 21
+ * bsl is probably on 22
+ * bde is on 23
+ * bpc is on 24
+ * bne is probably on 25
+ * blb is probably on 26
+ * missions start on 27
+ * bms-1 is on 117
+ * blb-1 is probably on 123
+ * no idea whats taking the remaining of the 142 slots
+ */
 
-	// youre telling me i cant switch on a string? man
-	if (stageName == "ghz100")		CArchipelagoData::TryCheckLocation(ELocation::eLocationClearGHZ1);
-	else if (stageName == "ghz200")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearGHZ2);
-	else if (stageName == "cpz100")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearCPZ1);
-	else if (stageName == "cpz200")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearCPZ2);
-	else if (stageName == "ssz100")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearSSZ1);
-	else if (stageName == "ssz200")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearSSZ2);
-	else if (stageName == "bms")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearBMS);
-	else if (stageName == "bde")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearBDE);
-	else if (stageName == "sph100")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearSPH1);
-	else if (stageName == "sph200")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearSPH2);
-	else if (stageName == "cte100")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearCTE1);
-	else if (stageName == "cte200")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearCTE2);
-	else if (stageName == "ssh100")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearSSH1);
-	else if (stageName == "ssh200")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearSSH2);
-	else if (stageName == "bsd")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearBSD);
-	else if (stageName == "bpc")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearBPC);
-	else if (stageName == "csc100")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearCSC1);
-	else if (stageName == "csc200")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearCSC2);
-	else if (stageName == "euc100")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearEUC1);
-	else if (stageName == "euc200")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearEUC2);
-	else if (stageName == "pla100")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearPLA1);
-	else if (stageName == "pla200")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearPLA2);
-	else if (stageName == "bsl")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearBSL);
-	else if (stageName == "bne")	CArchipelagoData::TryCheckLocation(ELocation::eLocationClearBNE);
-	else if (stageName == "blb")
+void __fastcall OnStageClear(uint32_t index)
+{
+	if (index >= 0 && index <= 17)
+		CArchipelagoData::TryCheckLocation(ELocation::eLocationClearGHZ1 + index);
+	else if (index >= 20 && index <= 25)
+		CArchipelagoData::TryCheckLocation(ELocation::eLocationClearBMS + (index - 20));
+	else if (index == 26)
 	{
 		if (CArchipelagoData::TryCheckLocation(ELocation::eLocationClearBLB))
 			AP_StoryComplete();
 	}
+}
 
-	originalActClear(pThis);
+uint32_t StageClear_ASMReturnAddress_OK = 0xD585F1;
+uint32_t StageClear_ASMReturnAddress_NG = 0xD58661;
+void __declspec(naked) StageClear_ASM()
+{
+	__asm
+	{
+		push ecx
+		push eax
+		mov ecx, eax
+		call[OnStageClear]
+		pop eax
+		pop ecx
+
+		cmp eax, 0x8E
+		jae NG
+
+		jmp[StageClear_ASMReturnAddress_OK]
+
+		NG:
+		jmp[StageClear_ASMReturnAddress_NG]
+	}
 }
 #pragma endregion
 
@@ -241,7 +254,6 @@ void InitHooks()
 	INSTALL_HOOK(ChaosEmeraldTouched);
 	INSTALL_HOOK(RedEmeraldCollect);
 	INSTALL_HOOK(BossKeyTouched);
-	INSTALL_HOOK(ActClear);
 	
 	WRITE_JUMP(0xEF7DFC, ChaosEmeraldTouched_ASM);
 	WRITE_JUMP(0xEF8583, ChaosEmeraldInit_ASM);
@@ -249,6 +261,7 @@ void InitHooks()
 	WRITE_JUMP(0x4DBDAC, BossKeyTouched_ASM);
 	WRITE_JUMP(0x4DBEED, BossKeyCheck_ASM);
 	WRITE_JUMP(0xD7176B, SetBossKeyActiveOnMissionClear_ASM);
+	WRITE_JUMP(0xD585EA, StageClear_ASM);
 }
 
 // TODO: dont recieve every item again when reconnecting, for prog items you can just check against save but what about inf filler?
