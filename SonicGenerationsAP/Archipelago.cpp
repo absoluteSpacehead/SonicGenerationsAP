@@ -17,41 +17,36 @@ void CArchipelagoData::OnItemRecieved(int id, bool alert)
 		return;
 	}
 
-	if (!ItemsCollected[id])
+	printf("item recieved %d\n", id);
+	Sonic::CGameParameter::SSaveData* pSaveData = Sonic::CApplicationDocument::GetInstance()->m_pMember->m_spGameParameter->m_pSaveData;
+
+	// emeralds
+	if (id >= eItemEGreen && id <= eItemEWhite)
 	{
-		printf("item recieved %d\n", id);
-		Sonic::CGameParameter::SSaveData* pSaveData = Sonic::CApplicationDocument::GetInstance()->m_pMember->m_spGameParameter->m_pSaveData;
+		ItemsCollected[id] = true;
 
-		// emeralds
-		if (id >= eItemEGreen && id <= eItemEWhite)
-		{
-			ItemsCollected[id] = true;
-
-			if (pSaveData->Emeralds[id - 1] != Sonic::CGameParameter::SSaveData::EEmeraldState::eEmeraldState_Active)
-				pSaveData->Emeralds[id - 1] = Sonic::CGameParameter::SSaveData::EEmeraldState::eEmeraldState_Collected;
-		}
-
-		// boss keys
-		if (id >= eItemBKGHZ && id <= eItemBKPLA)
-		{
-			ItemsCollected[id] = true;
-			int keyId = id - eItemBKGHZ;
-
-			// for some reason each one is duplicated, i assume one for modern one for classic
-			// but you only need to collect one per zone...
-			// maybe they were planning to make it 6 keys per boss. jesus christ
-			if (pSaveData->BossKeys[keyId * 2] != Sonic::CGameParameter::SSaveData::EBossKeyState::eBossKeyState_Collectable)
-			{
-				pSaveData->BossKeys[keyId * 2] = Sonic::CGameParameter::SSaveData::EBossKeyState::eBossKeyState_Collected;
-				pSaveData->BossKeys[(keyId * 2) + 1] = Sonic::CGameParameter::SSaveData::EBossKeyState::eBossKeyState_Collected;
-			}
-		}
-		
-		// filler
-		if (id == eItemNothing) {}
+		if (pSaveData->Emeralds[id - 1] != Sonic::CGameParameter::SSaveData::EEmeraldState::eEmeraldState_Active)
+			pSaveData->Emeralds[id - 1] = Sonic::CGameParameter::SSaveData::EEmeraldState::eEmeraldState_Collected;
 	}
-	else
-		return;
+
+	// boss keys
+	if (id >= eItemBKGHZ && id <= eItemBKPLA)
+	{
+		ItemsCollected[id] = true;
+		int keyId = id - eItemBKGHZ;
+
+		// for some reason each one is duplicated, i assume one for modern one for classic
+		// but you only need to collect one per zone...
+		// maybe they were planning to make it 6 keys per boss. jesus christ
+		if (pSaveData->BossKeys[keyId * 2] != Sonic::CGameParameter::SSaveData::EBossKeyState::eBossKeyState_Collectable)
+		{
+			pSaveData->BossKeys[keyId * 2] = Sonic::CGameParameter::SSaveData::EBossKeyState::eBossKeyState_Collected;
+			pSaveData->BossKeys[(keyId * 2) + 1] = Sonic::CGameParameter::SSaveData::EBossKeyState::eBossKeyState_Collected;
+		}
+	}
+
+	// filler
+	if (id == eItemNothing) {}
 }
 
 void CArchipelagoData::OnLocationChecked(int id)

@@ -13,13 +13,13 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
 #pragma region Chaos Emerald
 uint32_t __fastcall DecideSavedEmeraldValue(int32_t index)
 {
-	return CArchipelagoData::IsItemRecieved(EItem::eItemEGreen + index) ? Sonic::CGameParameter::SSaveData::EEmeraldState::eEmeraldState_Collected : 0;
+	return CArchipelagoData::IsItemRecieved(EItem::eItemEGreen + index) ? 3 : 0;
 }
 
 #pragma region Playable Menu
 HOOK(void, __fastcall, ChaosEmeraldTouched, 0xEF8A60, CChaosEmeraldPlayableMenu* pThis)
 {
-	if (pThis->EmeraldState == Sonic::CGameParameter::SSaveData::EEmeraldState::eEmeraldState_Active)
+	if (pThis->EmeraldState == 2)
 		CArchipelagoData::TryCheckLocation(ELocation::eLocationEGreen + pThis->EmeraldIndex);
 
 	originalChaosEmeraldTouched(pThis);
@@ -45,7 +45,7 @@ void __declspec(naked) ChaosEmeraldTouched_ASM()
 
 uint32_t __fastcall DecideShowEmerald(int32_t index)
 {
-	return pSaveData->Emeralds[index] >= 3 && !CArchipelagoData::IsLocationChecked(ELocation::eLocationEGreen + index) ? Sonic::CGameParameter::SSaveData::EEmeraldState::eEmeraldState_Inactive : pSaveData->Emeralds[index];
+	return pSaveData->Emeralds[index] >= 3 && !CArchipelagoData::IsLocationChecked(ELocation::eLocationEGreen + index) ? 0 : pSaveData->Emeralds[index];
 }
 
 uint32_t ChaosEmeraldInit_ASMReturnAddress = 0xEF859B;
@@ -82,21 +82,16 @@ void __declspec(naked) RedEmeraldCollect_ASM()
 {
 	__asm
 	{
-		push eax
 		push edx
+		push eax
 		call[DecideSavedEmeraldValue]
+
+		mov edx, eax
+		pop eax
+
+		mov dword ptr[eax + ecx * 0x4 + 0xA048], edx
+
 		pop edx
-
-		test eax, eax
-		jz NotCollected
-
-		pop eax
-		mov dword ptr[eax + ecx * 0x4 + 0xA048], 0x3
-		jmp[RedEmeraldCollect_ASMReturnAddress]
-
-		NotCollected:
-		pop eax
-		mov dword ptr[eax + ecx * 0x4 + 0xA048], 0x0
 		jmp[RedEmeraldCollect_ASMReturnAddress]
 	}
 }
@@ -106,7 +101,7 @@ void __declspec(naked) RedEmeraldCollect_ASM()
 #pragma region Boss Key
 HOOK(void, __fastcall, BossKeyTouched, 0x4DBA30, CObjBossGateKeyForSetObject* pThis)
 {
-	if (pThis->KeyState == Sonic::CGameParameter::SSaveData::EBossKeyState::eBossKeyState_Collectable)
+	if (pThis->KeyState == 2)
 		CArchipelagoData::TryCheckLocation(ELocation::eLocationBKGHZ + pThis->KeyIndex / 2);
 
 	originalBossKeyTouched(pThis);
@@ -114,7 +109,7 @@ HOOK(void, __fastcall, BossKeyTouched, 0x4DBA30, CObjBossGateKeyForSetObject* pT
 
 uint32_t __fastcall DecideSavedBossKeyValue(int32_t index)
 {
-	return CArchipelagoData::IsItemRecieved(EItem::eItemBKGHZ + index / 2) ? Sonic::CGameParameter::SSaveData::EBossKeyState::eBossKeyState_Collected : Sonic::CGameParameter::SSaveData::EBossKeyState::eBossKeyState_Active;
+	return CArchipelagoData::IsItemRecieved(EItem::eItemBKGHZ + index / 2) ? 3 : 1;
 }
 
 uint32_t BossKeyTouched_ASMReturnAddress = 0x4DBDBD;
@@ -143,7 +138,7 @@ void __declspec(naked) BossKeyTouched_ASM()
 
 uint32_t __fastcall DecideShowBossKey(int32_t index)
 {
-	return pSaveData->BossKeys[index] >= 3 && !CArchipelagoData::IsLocationChecked(ELocation::eLocationBKGHZ + index / 2) ? Sonic::CGameParameter::SSaveData::EBossKeyState::eBossKeyState_Active : pSaveData->BossKeys[index];
+	return pSaveData->BossKeys[index] == 3 && !CArchipelagoData::IsLocationChecked(ELocation::eLocationBKGHZ + index / 2) ? 1 : pSaveData->BossKeys[index];
 }
 
 uint32_t BossKeyCheck_ASMReturnAddress = 0x4DBEF3;
