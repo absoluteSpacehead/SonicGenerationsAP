@@ -1,6 +1,7 @@
 #include <iostream>
 #include "Archipelago.h"
 #include "Config.h"
+#include "Utils.hpp"
 #include <LostCodeLoader.h>
 
 Sonic::CGameParameter::SSaveData* pSaveData = nullptr;
@@ -244,8 +245,37 @@ void __declspec(naked) StageClear_ASM()
 }
 #pragma endregion
 
+bool InitAP()
+{
+	if (!CConfiguration::LoadConfig())
+		return false;
+
+	CArchipelagoData::HasTriedInit = true;
+
+	AP_Init(CConfiguration::GetAPAddress().c_str(), "Sonic Generations", CConfiguration::GetAPSlotName().c_str(), CConfiguration::GetAPPassword().c_str());
+
+	AP_SetItemClearCallback(CArchipelagoData::ClearData);
+	AP_SetItemRecvCallback(CArchipelagoData::OnItemRecieved);
+	AP_SetLocationCheckedCallback(CArchipelagoData::OnLocationChecked);
+
+	AP_Start();
+	return true;
+}
+
+// 0x10840 -- HE1ML CSaveLoadTestPC::SaveContentsRead hook.
+// it completely replaces the original func and im pretty sure it does it *after* loading all the mods, so we gotta hook that instead of re-hooking the original
+uintptr_t HEMLSaveContentsReadHook_Offset = 0x10840;
+HOOK(bool, __fastcall, HEMLSaveContentsReadHook, Utils::Offset<uintptr_t>(L"dinput8.dll", HEMLSaveContentsReadHook_Offset), void* ecx, void* edx, void* buffer, size_t bufsize)
+{
+	if (!CArchipelagoData::HasTriedInit)
+		InitAP();
+
+	return originalHEMLSaveContentsReadHook(ecx, edx, buffer, bufsize);
+}
+
 void InitHooks()
 {
+	INSTALL_HOOK(HEMLSaveContentsReadHook);
 	INSTALL_HOOK(ChaosEmeraldTouched);
 	INSTALL_HOOK(RedEmeraldCollect);
 	INSTALL_HOOK(BossKeyTouched);
@@ -259,21 +289,6 @@ void InitHooks()
 	WRITE_JUMP(0xD585EA, StageClear_ASM);
 }
 
-bool InitAP()
-{
-	if (!CConfiguration::LoadConfig())
-		return false;
-
-	AP_Init(CConfiguration::GetAPAddress().c_str(), "Sonic Generations", CConfiguration::GetAPSlotName().c_str(), CConfiguration::GetAPPassword().c_str());
-
-	AP_SetItemClearCallback(CArchipelagoData::ClearData);
-	AP_SetItemRecvCallback(CArchipelagoData::OnItemRecieved);
-	AP_SetLocationCheckedCallback(CArchipelagoData::OnLocationChecked);
-
-	AP_Start();
-	return true;
-}
-
 extern "C" __declspec(dllexport) void OnFrame()
 {
 	// todo: queue prompts and display them when in white space
@@ -283,15 +298,6 @@ extern "C" __declspec(dllexport) void OnFrame()
 		{
 			//AP_Message* msg = AP_GetLatestMessage();
 			AP_ClearLatestMessage();
-		}
-	}
-	else
-	{
-		if (Sonic::CGameDocument::GetInstance()->m_pMember->m_StageName.length() != 0 && !CArchipelagoData::HasTriedInit)
-		{
-			CArchipelagoData::HasTriedInit = true;
-
-			InitAP();
 		}
 	}
 

@@ -11,5 +11,6 @@
     <ClInclude Include="Types.h" />
     <ClInclude Include="Archipelago.h" />
     <ClInclude Include="Config.h" />
+    <ClInclude Include="Utils.hpp" />
   </ItemGroup>
 </Project>

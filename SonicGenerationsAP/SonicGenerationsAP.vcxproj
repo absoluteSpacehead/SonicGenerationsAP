@@ -196,6 +196,7 @@
     <ClInclude Include="Config.h" />
     <ClInclude Include="Pch.h" />
     <ClInclude Include="Types.h" />
+    <ClInclude Include="Utils.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
