@@ -273,6 +273,35 @@ HOOK(bool, __fastcall, HEMLSaveContentsReadHook, Utils::Offset<uint32_t>(L"dinpu
 	return originalHEMLSaveContentsReadHook(ecx, edx, buffer, bufsize);
 }
 
+// prevents selecting menu options until authenticated.
+// i could probably stand to make this only apply to new game / continue, but ummmmm?? im sorta lazy :3
+uint32_t MenuConfirmPressed_ASMReturnAddress = 0x572c23;
+void __declspec(naked) MenuConfirmPressed_ASM()
+{
+	__asm
+	{
+		push eax
+		push ecx
+		call[AP_GetConnectionStatus]
+		cmp eax, 0x2
+		pop ecx
+		pop eax
+		jz OK
+
+		pop edi
+		pop esi
+		pop ebp
+		pop ebx
+		mov esp,ebp
+		pop ebp
+		ret
+
+		OK:
+		cmp dword ptr[ebx + 0x1EA], 0x0
+		jmp[MenuConfirmPressed_ASMReturnAddress]
+	}
+}
+
 void InitHooks()
 {
 	INSTALL_HOOK(HEMLSaveContentsReadHook);
@@ -287,6 +316,7 @@ void InitHooks()
 	WRITE_JUMP(0x4DBEED, BossKeyCheck_ASM);
 	WRITE_JUMP(0xD7176B, SetBossKeyActiveOnMissionClear_ASM);
 	WRITE_JUMP(0xD585EA, StageClear_ASM);
+	WRITE_JUMP(0x572C1C, MenuConfirmPressed_ASM);
 }
 
 extern "C" __declspec(dllexport) void OnFrame()
