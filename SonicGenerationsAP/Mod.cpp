@@ -264,8 +264,8 @@ bool InitAP()
 
 // 0x10840 -- HE1ML CSaveLoadTestPC::SaveContentsRead hook.
 // it completely replaces the original func and im pretty sure it does it *after* loading all the mods, so we gotta hook that instead of re-hooking the original
-uintptr_t HEMLSaveContentsReadHook_Offset = 0x10840;
-HOOK(bool, __fastcall, HEMLSaveContentsReadHook, Utils::Offset<uintptr_t>(L"dinput8.dll", HEMLSaveContentsReadHook_Offset), void* ecx, void* edx, void* buffer, size_t bufsize)
+uint32_t HEMLSaveContentsReadHook_Offset = 0x10840;
+HOOK(bool, __fastcall, HEMLSaveContentsReadHook, Utils::Offset<uint32_t>(L"dinput8.dll", HEMLSaveContentsReadHook_Offset), void* ecx, void* edx, void* buffer, size_t bufsize)
 {
 	if (!CArchipelagoData::HasTriedInit)
 		InitAP();
