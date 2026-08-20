@@ -8,15 +8,7 @@ void CArchipelagoData::ClearData()
 
 void CArchipelagoData::OnItemRecieved(int id, bool alert)
 {
-	if (!alert)
-	{
-		printf("item resent %d\n", id);
-		// mark as collected but ignore otherwise
-		if (id != eItemNothing)
-			ItemsCollected[id] = true;
-		return;
-	}
-
+	// progression
 	printf("item recieved %d\n", id);
 	Sonic::CGameParameter::SSaveData* pSaveData = Sonic::CApplicationDocument::GetInstance()->m_pMember->m_spGameParameter->m_pSaveData;
 
@@ -43,6 +35,16 @@ void CArchipelagoData::OnItemRecieved(int id, bool alert)
 			pSaveData->BossKeys[keyId * 2] = Sonic::CGameParameter::SSaveData::EBossKeyState::eBossKeyState_Collected;
 			pSaveData->BossKeys[(keyId * 2) + 1] = Sonic::CGameParameter::SSaveData::EBossKeyState::eBossKeyState_Collected;
 		}
+	}
+
+	// non-progression
+	if (!alert)
+	{
+		printf("item resent %d\n", id);
+		// mark as collected but ignore otherwise
+		if (id != eItemNothing)
+			ItemsCollected[id] = true;
+		return;
 	}
 
 	// filler
