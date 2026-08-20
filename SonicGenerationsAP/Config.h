@@ -1,19 +1,17 @@
 #pragma once
 
-class CConfiguration
+namespace Config
 {
-private:
-	inline static bool ConfigLoaded;
-	inline static std::string APAddress;
-	inline static std::string APSlotName;
-	inline static std::string APPassword;
+	inline bool ConfigLoaded;
+	inline std::string APAddress;
+	inline std::string APSlotName;
+	inline std::string APPassword;
 
-public:
-	inline static std::string ConfigPath;
+	inline std::string ConfigPath;
 
-	static std::string GetAPAddress();
-	static std::string GetAPSlotName();
-	static std::string GetAPPassword();
+	std::string GetAPAddress();
+	std::string GetAPSlotName();
+	std::string GetAPPassword();
 
-	static bool LoadConfig();
+	bool LoadConfig();
 };

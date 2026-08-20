@@ -1,188 +1,16 @@
 #include <iostream>
 #include "Archipelago.h"
 #include "Config.h"
-#include "Utils.hpp"
+#include "Utils.h"
+#include "APChaosEmerald.h"
+#include "APBossKey.h"
+#include "Globals.h"
 #include <LostCodeLoader.h>
-
-Sonic::CGameParameter::SSaveData* pSaveData = nullptr;
 
 BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
 {
 	return TRUE;
 }
-
-#pragma region Chaos Emerald
-uint32_t __fastcall DecideSavedEmeraldValue(int32_t index)
-{
-	return CArchipelagoData::IsItemRecieved(EItem::eItemEGreen + index) ? 3 : 0;
-}
-
-#pragma region Playable Menu
-HOOK(void, __fastcall, ChaosEmeraldTouched, 0xEF8A60, CChaosEmeraldPlayableMenu* pThis)
-{
-	if (pThis->EmeraldState == 2)
-		CArchipelagoData::TryCheckLocation(ELocation::eLocationEGreen + pThis->EmeraldIndex);
-
-	originalChaosEmeraldTouched(pThis);
-}
-
-uint32_t ChaosEmeraldTouched_ASMReturnAddress = 0xEF7E02;
-void __declspec(naked) ChaosEmeraldTouched_ASM()
-{
-	__asm
-	{
-		push eax
-		push ecx
-		mov ecx, dword ptr[edi + 0x104]
-		call[DecideSavedEmeraldValue]
-
-		mov edx, eax
-		pop ecx
-		pop eax
-
-		jmp[ChaosEmeraldTouched_ASMReturnAddress]
-	}
-}
-
-uint32_t __fastcall DecideShowEmerald(int32_t index)
-{
-	return pSaveData->Emeralds[index] >= 3 && !CArchipelagoData::IsLocationChecked(ELocation::eLocationEGreen + index) ? 0 : pSaveData->Emeralds[index];
-}
-
-uint32_t ChaosEmeraldInit_ASMReturnAddress = 0xEF859B;
-void __declspec(naked) ChaosEmeraldInit_ASM()
-{ 
-	__asm
-	{
-		mov eax, dword ptr[esi + 0xa4]
-
-		push eax
-		push ecx
-		mov ecx, ebx
-		call[DecideShowEmerald]
-
-		mov dword ptr[esi + 0x120], eax
-
-		pop ecx
-		pop eax
-		jmp[ChaosEmeraldInit_ASMReturnAddress]
-	}
-}
-#pragma endregion
-
-#pragma region Red Emerald (Planet Wisp Cutscene)
-HOOK(void, __fastcall, RedEmeraldCollect, 0x569AE0, CSequenceElementTakeEmerald* pThis)
-{
-	CArchipelagoData::TryCheckLocation(ELocation::eLocationERed);
-
-	originalRedEmeraldCollect(pThis);
-}
-
-uint32_t RedEmeraldCollect_ASMReturnAddress = 0x569B15;
-void __declspec(naked) RedEmeraldCollect_ASM()
-{
-	__asm
-	{
-		push edx
-		push eax
-		call[DecideSavedEmeraldValue]
-
-		mov edx, eax
-		pop eax
-
-		mov dword ptr[eax + ecx * 0x4 + 0xA048], edx
-
-		pop edx
-		jmp[RedEmeraldCollect_ASMReturnAddress]
-	}
-}
-#pragma endregion
-#pragma endregion
-
-#pragma region Boss Key
-HOOK(void, __fastcall, BossKeyTouched, 0x4DBA30, CObjBossGateKeyForSetObject* pThis)
-{
-	if (pThis->KeyState == 2)
-		CArchipelagoData::TryCheckLocation(ELocation::eLocationBKGHZ + pThis->KeyIndex / 2);
-
-	originalBossKeyTouched(pThis);
-}
-
-uint32_t __fastcall DecideSavedBossKeyValue(int32_t index)
-{
-	return CArchipelagoData::IsItemRecieved(EItem::eItemBKGHZ + index / 2) ? 3 : 1;
-}
-
-uint32_t BossKeyTouched_ASMReturnAddress = 0x4DBDBD;
-void __declspec(naked) BossKeyTouched_ASM()
-{
-	__asm
-	{
-		push ecx
-		push edx
-		push eax
-		mov ecx, eax
-		call[DecideSavedBossKeyValue]
-
-		mov ecx, eax
-		pop eax
-		pop edx
-		
-		mov dword ptr[edx + eax * 0x4 + 0xA000], ecx
-		mov dword ptr[edx + eax * 0x4 + 0xA004], ecx
-
-		pop ecx
-
-		jmp[BossKeyTouched_ASMReturnAddress]
-	}
-}
-
-uint32_t __fastcall DecideShowBossKey(int32_t index)
-{
-	return pSaveData->BossKeys[index] == 3 && !CArchipelagoData::IsLocationChecked(ELocation::eLocationBKGHZ + index / 2) ? 1 : pSaveData->BossKeys[index];
-}
-
-uint32_t BossKeyCheck_ASMReturnAddress = 0x4DBEF3;
-void __declspec(naked) BossKeyCheck_ASM()
-{
-	__asm
-	{
-		push edx
-		call[DecideShowBossKey]
-		pop edx
-
-		mov dword ptr[edi + 0x108], eax
-
-		jmp[BossKeyCheck_ASMReturnAddress]
-	}
-}
-
-bool __fastcall DecideSetBossKeyActive(int32_t index)
-{
-	return !CArchipelagoData::IsLocationChecked(ELocation::eLocationBKGHZ + index / 2);
-}
-
-// this hook does mean that you can briefly un-collect the boss key.. but it restores itself when you pick it up if you had previously received it so i think thats OK
-uint32_t SetBossKeyActiveOnMissionClear_ASMReturnAddress_OK = 0xD71774;
-uint32_t SetBossKeyActiveOnMissionClear_ASMReturnAddress_NG = 0xD717BE;
-void __declspec(naked) SetBossKeyActiveOnMissionClear_ASM()
-{
-	__asm
-	{
-		push ecx
-		mov ecx, ebx
-		call[DecideSetBossKeyActive]
-		pop ecx
-
-		test eax,eax
-		jz NG
-		jmp[SetBossKeyActiveOnMissionClear_ASMReturnAddress_OK]
-
-		NG:
-		jmp[SetBossKeyActiveOnMissionClear_ASMReturnAddress_NG]
-	}
-}
-#pragma endregion
 
 // TODO: disable the thing the game does where you *have* to play each level in order (per sonic) [cont.]
 // for example: you cannot play city escape act 1 before playing all act 1s before it
@@ -210,13 +38,13 @@ void __declspec(naked) SetBossKeyActiveOnMissionClear_ASM()
 
 void __fastcall OnStageClear(uint32_t index)
 {
-	if (index >= 0 && index <= 17)
-		CArchipelagoData::TryCheckLocation(ELocation::eLocationClearGHZ1 + index);
-	else if (index >= 20 && index <= 25)
-		CArchipelagoData::TryCheckLocation(ELocation::eLocationClearBMS + (index - 20));
-	else if (index == 26)
+	if (index >= 0 && index <= 17) // ghz1->pla2
+		Archipelago::TryCheckLocation(Archipelago::ELocation::eLocationClearGHZ1 + index);
+	else if (index >= 20 && index <= 25) // bms -> bne
+		Archipelago::TryCheckLocation(Archipelago::ELocation::eLocationClearBMS + (index - 20));
+	else if (index == 26) // blb
 	{
-		if (CArchipelagoData::TryCheckLocation(ELocation::eLocationClearBLB))
+		if (Archipelago::TryCheckLocation(Archipelago::ELocation::eLocationClearBLB))
 			AP_StoryComplete();
 	}
 }
@@ -245,36 +73,19 @@ void __declspec(naked) StageClear_ASM()
 }
 #pragma endregion
 
-bool InitAP()
-{
-	if (!CConfiguration::LoadConfig())
-		return false;
-
-	CArchipelagoData::HasTriedInit = true;
-
-	AP_Init(CConfiguration::GetAPAddress().c_str(), "Sonic Generations", CConfiguration::GetAPSlotName().c_str(), CConfiguration::GetAPPassword().c_str());
-
-	AP_SetItemClearCallback(CArchipelagoData::ClearData);
-	AP_SetItemRecvCallback(CArchipelagoData::OnItemRecieved);
-	AP_SetLocationCheckedCallback(CArchipelagoData::OnLocationChecked);
-
-	AP_Start();
-	return true;
-}
-
 // 0x10840 -- HE1ML CSaveLoadTestPC::SaveContentsRead hook.
 // it completely replaces the original func and im pretty sure it does it *after* loading all the mods, so we gotta hook that instead of re-hooking the original
 uint32_t HEMLSaveContentsReadHook_Offset = 0x10840;
 HOOK(bool, __fastcall, HEMLSaveContentsReadHook, Utils::Offset<uint32_t>(L"dinput8.dll", HEMLSaveContentsReadHook_Offset), void* ecx, void* edx, void* buffer, size_t bufsize)
 {
-	if (!CArchipelagoData::HasTriedInit)
-		InitAP();
+	if (!Archipelago::HasTriedInit)
+		Archipelago::InitAP();
 
 	return originalHEMLSaveContentsReadHook(ecx, edx, buffer, bufsize);
 }
 
 // prevents selecting menu options until authenticated.
-// i could probably stand to make this only apply to new game / continue, but ummmmm?? im sorta lazy :3
+// todo: make this only apply to new game / continue
 uint32_t MenuConfirmPressed_ASMReturnAddress = 0x572c23;
 void __declspec(naked) MenuConfirmPressed_ASM()
 {
@@ -304,17 +115,11 @@ void __declspec(naked) MenuConfirmPressed_ASM()
 
 void InitHooks()
 {
+	APChaosEmerald::InstallHooks();
+	APBossKey::InstallHooks();
+
 	INSTALL_HOOK(HEMLSaveContentsReadHook);
-	INSTALL_HOOK(ChaosEmeraldTouched);
-	INSTALL_HOOK(RedEmeraldCollect);
-	INSTALL_HOOK(BossKeyTouched);
-	
-	WRITE_JUMP(0xEF7DFC, ChaosEmeraldTouched_ASM);
-	WRITE_JUMP(0xEF8583, ChaosEmeraldInit_ASM);
-	WRITE_JUMP(0x569B0A, RedEmeraldCollect_ASM);
-	WRITE_JUMP(0x4DBDAC, BossKeyTouched_ASM);
-	WRITE_JUMP(0x4DBEED, BossKeyCheck_ASM);
-	WRITE_JUMP(0xD7176B, SetBossKeyActiveOnMissionClear_ASM);
+
 	WRITE_JUMP(0xD585EA, StageClear_ASM);
 	WRITE_JUMP(0x572C1C, MenuConfirmPressed_ASM);
 }
@@ -336,10 +141,10 @@ extern "C" __declspec(dllexport) void OnFrame()
 	if (!pDoc)
 		return;
 
-	if (pDoc->m_pMember->m_spGameParameter->m_pSaveData == pSaveData)
+	if (pDoc->m_pMember->m_spGameParameter->m_pSaveData == Globals::pSaveData)
 		return;
 
-	pSaveData = pDoc->m_pMember->m_spGameParameter->m_pSaveData;
+	Globals::pSaveData = pDoc->m_pMember->m_spGameParameter->m_pSaveData;
 	printf("New save data address: %p\n", pDoc->m_pMember->m_spGameParameter->m_pSaveData);
 }
 
@@ -350,7 +155,7 @@ extern "C" __declspec(dllexport) void Init(ModInfo* info)
 	if (pos != std::string::npos)
 		path.erase(pos + 1);
 	path += "Config.ini";
-	CConfiguration::ConfigPath = path;
+	Config::ConfigPath = path;
 
 	InitHooks();
 }

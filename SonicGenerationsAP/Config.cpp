@@ -1,6 +1,6 @@
 #include "Config.h"
 
-bool CConfiguration::LoadConfig()
+bool Config::LoadConfig()
 {
 	if (ConfigLoaded)
 		return true;
@@ -23,17 +23,17 @@ bool CConfiguration::LoadConfig()
 	return true;
 }
 
-std::string CConfiguration::GetAPAddress()
+std::string Config::GetAPAddress()
 {
 	return APAddress;
 }
 
-std::string CConfiguration::GetAPSlotName()
+std::string Config::GetAPSlotName()
 {
 	return APSlotName;
 }
 
-std::string CConfiguration::GetAPPassword()
+std::string Config::GetAPPassword()
 {
 	return APPassword;
 }
