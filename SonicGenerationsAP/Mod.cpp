@@ -44,7 +44,16 @@ void __fastcall OnStageClear(uint32_t index)
 		Archipelago::TryCheckLocation(Archipelago::ELocation::eLocationClearBMS + (index - 20));
 	else if (index == 26) // blb
 	{
-		if (Archipelago::TryCheckLocation(Archipelago::ELocation::eLocationClearBLB))
+		if (Archipelago::TryCheckLocation(Archipelago::ELocation::eLocationClearBLB) && !Archipelago::pGameSettings.HardBosses)
+			AP_StoryComplete();
+	}
+	else if (index >= 27 && index <= 116 && Archipelago::pGameSettings.Challenges) // ghz11->pla25
+		Archipelago::TryCheckLocation(Archipelago::ELocation::eLocationClearGHZ11 + (index - 27));
+	else if (index >= 117 && index <= 122 && Archipelago::pGameSettings.HardBosses) // bms1->bne1
+		Archipelago::TryCheckLocation(Archipelago::ELocation::eLocationClearBMS1 + (index - 117));
+	else if (index == 123 && Archipelago::pGameSettings.HardBosses) // blb1
+	{
+		if (Archipelago::TryCheckLocation(Archipelago::ELocation::eLocationClearBLB1))
 			AP_StoryComplete();
 	}
 }

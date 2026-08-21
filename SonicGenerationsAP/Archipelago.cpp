@@ -109,6 +109,19 @@ bool Archipelago::InitAP()
 	AP_SetItemRecvCallback(Archipelago::OnItemRecieved);
 	AP_SetLocationCheckedCallback(Archipelago::OnLocationChecked);
 
+	AP_RegisterSlotDataIntCallback("hard_bosses", &SetHardBosses);
+	AP_RegisterSlotDataIntCallback("challenges", &SetChallenges);
+
 	AP_Start();
 	return true;
+}
+
+void Archipelago::SetHardBosses(int enabled)
+{
+	pGameSettings.HardBosses = enabled;
+}
+
+void Archipelago::SetChallenges(int enabled)
+{
+	pGameSettings.Challenges = enabled;
 }
