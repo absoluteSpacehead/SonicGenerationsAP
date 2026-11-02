@@ -65,8 +65,6 @@ void Archipelago::OnLocationChecked(int id)
 	{
 		LocationsChecked[id] = true;
 	}
-
-	// probably shouldnt silently ignore.. i dont care tho
 }
 
 bool __fastcall Archipelago::IsLocationChecked(int id)

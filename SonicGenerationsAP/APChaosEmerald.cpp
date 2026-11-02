@@ -15,19 +15,21 @@ HOOK(void, __fastcall, ChaosEmeraldTouched, 0xEF8A60, CChaosEmeraldPlayableMenu*
 	originalChaosEmeraldTouched(pThis);
 }
 
-uint32_t ChaosEmeraldTouched_ASMReturnAddress = 0xEF7E02;
+uint32_t ChaosEmeraldTouched_ASMReturnAddress = 0xEF7DDB;
 void __declspec(naked) ChaosEmeraldTouched_ASM()
 {
 	__asm
 	{
+		push edx
 		push eax
 		push ecx
-		mov ecx, dword ptr[edi + 0x104]
+		mov ecx, esi
 		call[DecideSavedEmeraldValue]
-
-		mov edx, eax
+		
+		mov dword ptr[edi + 0x120], eax
 		pop ecx
 		pop eax
+		pop edx
 
 		jmp[ChaosEmeraldTouched_ASMReturnAddress]
 	}
@@ -89,7 +91,7 @@ void APChaosEmerald::InstallHooks()
 	INSTALL_HOOK(ChaosEmeraldTouched);
 	INSTALL_HOOK(RedEmeraldCollect);
 
-	WRITE_JUMP(0xEF7DFC, ChaosEmeraldTouched_ASM);
+	WRITE_JUMP(0xEF7DD1, ChaosEmeraldTouched_ASM);
 	WRITE_JUMP(0xEF8583, ChaosEmeraldInit_ASM);
 	WRITE_JUMP(0x569B0A, RedEmeraldCollect_ASM);
 }

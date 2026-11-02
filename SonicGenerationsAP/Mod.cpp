@@ -87,10 +87,12 @@ void __declspec(naked) StageClear_ASM()
 uint32_t HEMLSaveContentsReadHook_Offset = 0x10840;
 HOOK(bool, __fastcall, HEMLSaveContentsReadHook, Utils::Offset<uint32_t>(L"dinput8.dll", HEMLSaveContentsReadHook_Offset), void* ecx, void* edx, void* buffer, size_t bufsize)
 {
+	bool value = originalHEMLSaveContentsReadHook(ecx, edx, buffer, bufsize);
+
 	if (!Archipelago::HasTriedInit)
 		Archipelago::InitAP();
 
-	return originalHEMLSaveContentsReadHook(ecx, edx, buffer, bufsize);
+	return value;
 }
 
 // prevents selecting menu options until authenticated.
