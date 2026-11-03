@@ -19,6 +19,7 @@ void Archipelago::OnItemRecieved(int id, bool alert)
 	// progression
 	printf("item recieved %d\n", id);
 	Sonic::CGameParameter::SSaveData* pSaveData = Sonic::CApplicationDocument::GetInstance()->m_pMember->m_spGameParameter->m_pSaveData;
+	Sonic::CGameParameter::SStageParameter* pStageParameter = Sonic::CApplicationDocument::GetInstance()->m_pMember->m_spGameParameter->m_pStageParameter;
 
 	// emeralds
 	if (id >= EItem::eItemEGreen && id <= EItem::eItemEWhite)
@@ -45,7 +46,20 @@ void Archipelago::OnItemRecieved(int id, bool alert)
 		}
 	}
 
-	// non-progression
+	// collection items (red rings)
+	if (id == EItem::eItemCollectionItem)
+	{
+		ItemsCollected[id] = true;
+
+		printf("collection item: %d, %d, %d\n", NumCollectionItems >> 5, NumCollectionItems % 32, NumCollectionItems);
+
+		pSaveData->RedRings[NumCollectionItems >> 5][NumCollectionItems % 32] = 1;
+		pStageParameter->RedRings[NumCollectionItems >> 5][NumCollectionItems % 32] = 1;
+
+		NumCollectionItems++;
+	}
+
+	// filler
 	if (!alert)
 	{
 		printf("item resent %d\n", id);
@@ -108,7 +122,7 @@ bool Archipelago::InitAP()
 	AP_SetLocationCheckedCallback(Archipelago::OnLocationChecked);
 
 	AP_RegisterSlotDataIntCallback("hard_bosses", &SetHardBosses);
-	AP_RegisterSlotDataIntCallback("challenges", &SetChallenges);
+	AP_RegisterSlotDataIntCallback("required_collection_count", &SetCollectionRequiredCount);
 
 	AP_Start();
 	return true;
@@ -116,10 +130,16 @@ bool Archipelago::InitAP()
 
 void Archipelago::SetHardBosses(int enabled)
 {
-	pGameSettings.HardBosses = enabled;
+	printf("hard bosses set to %d\n", enabled);
+	GameSettings.HardBosses = enabled;
 }
 
-void Archipelago::SetChallenges(int enabled)
+void Archipelago::SetCollectionRequiredCount(int count)
 {
-	pGameSettings.Challenges = enabled;
+	printf("collection required count set to %d\n", count);
+	GameSettings.CollectionRequiredCount = count;
+
+	// This is called on every reconnect, and we get resent items on every reconnect too
+	// If we don't reset, our tracked number easily goes significantly higher than it should
+	NumCollectionItems = 0;
 }

@@ -26,3 +26,15 @@ public:
 	char pad0[4];			// 0x0
 	int32_t EmeraldIndex;	// 0x4
 };
+
+class CObjRedMedal
+{
+public:
+	char pad0[184];		 // 0x0
+	int32_t FieldB8;	 // 0xB8
+	int32_t FieldBC;	 // 0xBC
+	char pad1[56];		 // 0xC0
+	int32_t* FieldF8;	 // 0xF8
+	char pad2[44];		 // 0xFC
+	uint32_t MedalIndex; // 0x128
+};

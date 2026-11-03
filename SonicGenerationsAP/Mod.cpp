@@ -4,6 +4,7 @@
 #include "Utils.h"
 #include "APChaosEmerald.h"
 #include "APBossKey.h"
+#include "APRedRing.h"
 #include "Globals.h"
 #include <LostCodeLoader.h>
 
@@ -12,11 +13,6 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
 	return TRUE;
 }
 
-// TODO: disable the thing the game does where you *have* to play each level in order (per sonic) [cont.]
-// for example: you cannot play city escape act 1 before playing all act 1s before it
-// this makes sense in vanilla, not here tho lol
-// this also isnt per era, so you cant skip seaside hill and play crisis city
-// but it does NOT apply to bosses, you can play bosses before playing all the levels
 #pragma region Act Clear
 /*
  * SSaveData stages go:
@@ -44,16 +40,16 @@ void __fastcall OnStageClear(uint32_t index)
 		Archipelago::TryCheckLocation(Archipelago::ELocation::eLocationClearBMS + (index - 20));
 	else if (index == 26) // blb
 	{
-		if (Archipelago::TryCheckLocation(Archipelago::ELocation::eLocationClearBLB) && !Archipelago::pGameSettings.HardBosses)
+		if (Archipelago::TryCheckLocation(Archipelago::ELocation::eLocationClearBLB) && !Archipelago::GameSettings.HardBosses)
 			AP_StoryComplete();
 	}
-	else if (index >= 27 && index <= 116 && Archipelago::pGameSettings.Challenges) // ghz11->pla25
+	else if (index >= 27 && index <= 116) // ghz11->pla25
 		Archipelago::TryCheckLocation(Archipelago::ELocation::eLocationClearGHZ11 + (index - 27));
-	else if (index >= 117 && index <= 122 && Archipelago::pGameSettings.HardBosses) // bms1->bne1
+	else if (index >= 117 && index <= 122) // bms1->bne1
 		Archipelago::TryCheckLocation(Archipelago::ELocation::eLocationClearBMS1 + (index - 117));
-	else if (index == 123 && Archipelago::pGameSettings.HardBosses) // blb1
+	else if (index == 123) // blb1
 	{
-		if (Archipelago::TryCheckLocation(Archipelago::ELocation::eLocationClearBLB1))
+		if (Archipelago::TryCheckLocation(Archipelago::ELocation::eLocationClearBLB1) && Archipelago::GameSettings.HardBosses)
 			AP_StoryComplete();
 	}
 }
@@ -82,6 +78,7 @@ void __declspec(naked) StageClear_ASM()
 }
 #pragma endregion
 
+#pragma region Main Menu
 // 0x10840 -- HE1ML CSaveLoadTestPC::SaveContentsRead hook.
 // it completely replaces the original func and im pretty sure it does it *after* loading all the mods, so we gotta hook that instead of re-hooking the original
 uint32_t HEMLSaveContentsReadHook_Offset = 0x10840;
@@ -123,13 +120,28 @@ void __declspec(naked) MenuConfirmPressed_ASM()
 		jmp[MenuConfirmPressed_ASMReturnAddress]
 	}
 }
+#pragma endregion
+
+#pragma region White Space
+HOOK(void, __fastcall, LastBossEntranceCollisionEntered, 0x4DF110, void* pThis)
+{
+	printf("trying to show last boss guide, need: %d, have: %d\n", Archipelago::GameSettings.CollectionRequiredCount, Archipelago::NumCollectionItems);
+
+	if (Archipelago::NumCollectionItems < Archipelago::GameSettings.CollectionRequiredCount) // always true if disabled and required count is 0
+		return;
+
+	originalLastBossEntranceCollisionEntered(pThis);
+}
+#pragma endregion
 
 void InitHooks()
 {
 	APChaosEmerald::InstallHooks();
 	APBossKey::InstallHooks();
+	APRedRing::InstallHooks();
 
 	INSTALL_HOOK(HEMLSaveContentsReadHook);
+	INSTALL_HOOK(LastBossEntranceCollisionEntered);
 
 	WRITE_JUMP(0xD585EA, StageClear_ASM);
 	WRITE_JUMP(0x572C1C, MenuConfirmPressed_ASM);
@@ -137,7 +149,7 @@ void InitHooks()
 
 extern "C" __declspec(dllexport) void OnFrame()
 {
-	// todo: queue prompts and display them when in white space
+	// todo: queue prompts and display them via imgui (horror)
 	if (AP_IsInit())
 	{
 		if (AP_IsMessagePending())
@@ -152,6 +164,7 @@ extern "C" __declspec(dllexport) void OnFrame()
 	if (!pDoc)
 		return;
 
+	// a bit hacky but i dont want to have to type this whole path out every time i need to access it
 	if (pDoc->m_pMember->m_spGameParameter->m_pSaveData == Globals::pSaveData)
 		return;
 

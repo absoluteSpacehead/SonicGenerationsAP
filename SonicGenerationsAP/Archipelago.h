@@ -155,6 +155,105 @@ namespace Archipelago
 		eLocationClearBNE1,
 		eLocationClearBLB1,
 
+		eLocationRedRingGHZ11 = 250,
+		eLocationRedRingGHZ12,
+		eLocationRedRingGHZ13,
+		eLocationRedRingGHZ14,
+		eLocationRedRingGHZ15,
+		eLocationRedRingGHZ21,
+		eLocationRedRingGHZ22,
+		eLocationRedRingGHZ23,
+		eLocationRedRingGHZ24,
+		eLocationRedRingGHZ25,
+
+		eLocationRedRingCPZ11,
+		eLocationRedRingCPZ12,
+		eLocationRedRingCPZ13,
+		eLocationRedRingCPZ14,
+		eLocationRedRingCPZ15,
+		eLocationRedRingCPZ21,
+		eLocationRedRingCPZ22,
+		eLocationRedRingCPZ23,
+		eLocationRedRingCPZ24,
+		eLocationRedRingCPZ25,
+
+		eLocationRedRingSSZ11,
+		eLocationRedRingSSZ12,
+		eLocationRedRingSSZ13,
+		eLocationRedRingSSZ14,
+		eLocationRedRingSSZ15,
+		eLocationRedRingSSZ21,
+		eLocationRedRingSSZ22,
+		eLocationRedRingSSZ23,
+		eLocationRedRingSSZ24,
+		eLocationRedRingSSZ25,
+
+		eLocationRedRingSPH11,
+		eLocationRedRingSPH12,
+		eLocationRedRingSPH13,
+		eLocationRedRingSPH14,
+		eLocationRedRingSPH15,
+		eLocationRedRingSPH21,
+		eLocationRedRingSPH22,
+		eLocationRedRingSPH23,
+		eLocationRedRingSPH24,
+		eLocationRedRingSPH25,
+
+		eLocationRedRingCTE11,
+		eLocationRedRingCTE12,
+		eLocationRedRingCTE13,
+		eLocationRedRingCTE14,
+		eLocationRedRingCTE15,
+		eLocationRedRingCTE21,
+		eLocationRedRingCTE22,
+		eLocationRedRingCTE23,
+		eLocationRedRingCTE24,
+		eLocationRedRingCTE25,
+
+		eLocationRedRingSSH11,
+		eLocationRedRingSSH12,
+		eLocationRedRingSSH13,
+		eLocationRedRingSSH14,
+		eLocationRedRingSSH15,
+		eLocationRedRingSSH21,
+		eLocationRedRingSSH22,
+		eLocationRedRingSSH23,
+		eLocationRedRingSSH24,
+		eLocationRedRingSSH25,
+
+		eLocationRedRingCSC11,
+		eLocationRedRingCSC12,
+		eLocationRedRingCSC13,
+		eLocationRedRingCSC14,
+		eLocationRedRingCSC15,
+		eLocationRedRingCSC21,
+		eLocationRedRingCSC22,
+		eLocationRedRingCSC23,
+		eLocationRedRingCSC24,
+		eLocationRedRingCSC25,
+
+		eLocationRedRingEUC11,
+		eLocationRedRingEUC12,
+		eLocationRedRingEUC13,
+		eLocationRedRingEUC14,
+		eLocationRedRingEUC15,
+		eLocationRedRingEUC21,
+		eLocationRedRingEUC22,
+		eLocationRedRingEUC23,
+		eLocationRedRingEUC24,
+		eLocationRedRingEUC25,
+
+		eLocationRedRingPLA11,
+		eLocationRedRingPLA12,
+		eLocationRedRingPLA13,
+		eLocationRedRingPLA14,
+		eLocationRedRingPLA15,
+		eLocationRedRingPLA21,
+		eLocationRedRingPLA22,
+		eLocationRedRingPLA23,
+		eLocationRedRingPLA24,
+		eLocationRedRingPLA25,
+
 		nLocation
 	};
 
@@ -170,6 +269,8 @@ namespace Archipelago
 
 		eItemNothing = 8,
 
+		eItemCollectionItem = 9,
+
 		eItemBKGHZ = 50,
 		eItemBKCPZ,
 		eItemBKSSZ,
@@ -183,17 +284,18 @@ namespace Archipelago
 		nItem
 	};
 
-	struct GameSettings
+	struct SGameSettings
 	{
 		bool HardBosses;
-		bool Challenges;
+		int CollectionRequiredCount;
 	};
 	
 	inline bool LocationsChecked[ELocation::nLocation];
 	inline bool ItemsCollected[EItem::nItem];
+	inline int NumCollectionItems = 0;
 
 	void SetHardBosses(int enabled);
-	void SetChallenges(int enabled);
+	void SetCollectionRequiredCount(int count);
 
 	bool __fastcall IsLocationChecked(int id);
 	bool TryCheckLocation(int id);
@@ -206,5 +308,5 @@ namespace Archipelago
 
 	inline bool HasTriedInit;
 
-	inline GameSettings pGameSettings;
+	inline SGameSettings GameSettings;
 }

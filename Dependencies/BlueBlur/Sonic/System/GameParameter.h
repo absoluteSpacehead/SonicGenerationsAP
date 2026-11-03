@@ -141,8 +141,8 @@ namespace Sonic
 			Hedgehog::Math::CVector4 WhiteWorldPosition;
 			EBossKeyState BossKeys[18];
 			EEmeraldState Emeralds[7];
-			std::bitset<90> RedRings; //The redrings values may be aligned incorrectly
-			BB_INSERT_PADDING(0x78);
+			std::bitset<32> RedRings[3]; // Using a bitset<90> like base BlueBlur causes wrong alignment. Red rings are placed immediately after emeralds in the game.
+			BB_INSERT_PADDING(0x80);
 			int32_t SkillPoints;
 			BB_INSERT_PADDING(0xC);
 			SSkillInfo ClassicSkillInfo;
@@ -170,7 +170,8 @@ namespace Sonic
 			int32_t Field38;
 			int32_t Field3C;
 			int32_t Field40;
-			BB_INSERT_PADDING(0x18);
+			std::bitset<32> RedRings[3];
+			BB_INSERT_PADDING(0xC);
 			int32_t Field5C;
 			int32_t Field60;
 			BB_INSERT_PADDING(0x134);
@@ -206,7 +207,7 @@ namespace Sonic
 	BB_ASSERT_OFFSETOF(CGameParameter::SSaveData, WhiteWorldPosition, 0x9FF0);
 	BB_ASSERT_OFFSETOF(CGameParameter::SSaveData, BossKeys, 0xA000);
 	BB_ASSERT_OFFSETOF(CGameParameter::SSaveData, Emeralds, 0xA048);
-	BB_ASSERT_OFFSETOF(CGameParameter::SSaveData, RedRings, 0xA068);
+	BB_ASSERT_OFFSETOF(CGameParameter::SSaveData, RedRings, 0xA064);
 	BB_ASSERT_OFFSETOF(CGameParameter::SSaveData, SkillPoints, 0xA0F0);
 	BB_ASSERT_OFFSETOF(CGameParameter::SSaveData, ClassicSkillInfo, 0xA100);
 	BB_ASSERT_OFFSETOF(CGameParameter::SSaveData, ModernSkillInfo, 0xA190);
@@ -229,6 +230,7 @@ namespace Sonic
 	BB_ASSERT_OFFSETOF(CGameParameter::SStageParameter, Field38, 0x38);
 	BB_ASSERT_OFFSETOF(CGameParameter::SStageParameter, Field3C, 0x3C);
 	BB_ASSERT_OFFSETOF(CGameParameter::SStageParameter, Field40, 0x40);
+	BB_ASSERT_OFFSETOF(CGameParameter::SStageParameter, RedRings, 0x44);
 	BB_ASSERT_OFFSETOF(CGameParameter::SStageParameter, Field5C, 0x5C);
 	BB_ASSERT_OFFSETOF(CGameParameter::SStageParameter, Field60, 0x60);
 	BB_ASSERT_OFFSETOF(CGameParameter::SStageParameter, Field198, 0x198);

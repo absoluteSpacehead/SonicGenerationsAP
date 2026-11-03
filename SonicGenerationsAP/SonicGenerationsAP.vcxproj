@@ -179,6 +179,7 @@
   <ItemGroup>
     <ClCompile Include="APBossKey.cpp" />
     <ClCompile Include="APChaosEmerald.cpp" />
+    <ClCompile Include="APRedRing.cpp" />
     <ClCompile Include="Archipelago.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="Mod.cpp" />
@@ -197,6 +198,7 @@
   <ItemGroup>
     <ClInclude Include="APBossKey.h" />
     <ClInclude Include="APChaosEmerald.h" />
+    <ClInclude Include="APRedRing.h" />
     <ClInclude Include="Archipelago.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Globals.h" />
